@@ -1,17 +1,16 @@
-openapi: 3.0.0
+openapi: 3.0.1
 info:
-  title: Customer Service API
-  description: API for managing customers in the system
+  title: Customer API
+  description: API for managing customers
   version: 1.0.0
 servers:
-  - url: http://localhost:8081
+  - url: http://localhost:8081/customers
 paths:
-  /customers:
+  /:
     post:
       summary: Create a new customer
-      operationId: createCustomer
+      description: Creates a new customer in the system.
       requestBody:
-        description: Customer to be created
         required: true
         content:
           application/json:
@@ -25,30 +24,34 @@ paths:
               schema:
                 $ref: '#/components/schemas/Customer'
         '400':
-          description: Invalid input data
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
     get:
-      summary: Retrieve all customers
-      operationId: getAllCustomers
+      summary: Get all customers
+      description: Retrieves a list of all customers.
       responses:
         '200':
-          description: List of all customers
+          description: A list of customers
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/Customer'
-  /customers/{id}:
+
+  /{id}:
     get:
-      summary: Retrieve a customer by ID
-      operationId: getCustomerById
+      summary: Get a customer by ID
+      description: Retrieves a customer by their ID.
       parameters:
-        - name: id
-          in: path
+        - in: path
+          name: id
           required: true
           schema:
             type: integer
-            format: int64
           description: The ID of the customer to retrieve
       responses:
         '200':
@@ -59,19 +62,22 @@ paths:
                 $ref: '#/components/schemas/Customer'
         '404':
           description: Customer not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
     put:
       summary: Update a customer's details
-      operationId: updateCustomer
+      description: Updates the details of an existing customer.
       parameters:
-        - name: id
-          in: path
+        - in: path
+          name: id
           required: true
           schema:
             type: integer
-            format: int64
           description: The ID of the customer to update
       requestBody:
-        description: Updated customer details
         required: true
         content:
           application/json:
@@ -86,24 +92,43 @@ paths:
                 $ref: '#/components/schemas/Customer'
         '404':
           description: Customer not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
     delete:
-      summary: Delete a customer by ID
-      operationId: deleteCustomer
+      summary: Delete a customer
+      description: Deletes a customer by their ID.
       parameters:
-        - name: id
-          in: path
+        - in: path
+          name: id
           required: true
           schema:
             type: integer
-            format: int64
           description: The ID of the customer to delete
       responses:
         '204':
           description: Customer deleted successfully
         '400':
-          description: Cannot delete customer with active accounts
+          description: Customer has active accounts and cannot be deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Customer not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 components:
   schemas:
     Customer:
@@ -111,22 +136,34 @@ components:
       properties:
         id:
           type: integer
-          format: int64
-          description: Unique identifier of the customer
-        nombre:
+          description: Unique identifier for the customer
+        firstName:
           type: string
-          description: First name of the customer
-        apellido:
+          description: Customer's first name
+        lastName:
           type: string
-          description: Last name of the customer
+          description: Customer's last name
         dni:
           type: string
-          description: DNI of the customer
+          description: Customer's unique identification number
         email:
           type: string
           format: email
-          description: Email address of the customer
+          description: Customer's email address
       required:
-        - nombre
-        - apellido
+        - firstName
+        - lastName
         - dni
+        - email
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Description of the error
+        status:
+          type: string
+          description: HTTP status code related to the error
+      required:
+        - error
