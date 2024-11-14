@@ -18,7 +18,7 @@ import java.util.*;
  * It provides endpoints for creating, retrieving, updating, and deleting customers.
  */
 @RestController
-@RequestMapping("/customers")
+@RequestMapping("/api/customers")
 public class CustomerController {
 
   private final CustomerService customerService;
