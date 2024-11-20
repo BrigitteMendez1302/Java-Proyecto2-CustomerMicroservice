@@ -62,7 +62,7 @@ Modify the `application.properties` file to match your environment:
 
 ```properties
 # Spring Application Configuration
-spring.application.name=customermicroservice
+spring.application.name=customer
 
 # Server Configuration
 server.port=8081
