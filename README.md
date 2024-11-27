@@ -10,6 +10,7 @@ A microservice for managing customer data in a banking system. This microservice
 - [Configuration](#configuration)
 - [API Documentation](#api-documentation)
 - [Project Structure](#project-structure)
+- [Coverage Report](#coverage-report)
 - [License](#license)
 
 ---
@@ -119,6 +120,11 @@ src/
 ```
 
 ---
+## Coverage Report
+Aquí se muestra el reporte de cobertura de pruebas unitarias:
 
+![Reporte de cobertura](https://i.ibb.co/NLF4V13/customerms.png)
+
+---
 ## License
 This project is licensed under the [MIT License](LICENSE).
