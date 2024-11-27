@@ -1,5 +1,6 @@
 package com.example.customer.service.impl;
 
+import com.example.customer.client.BankAccountClient;
 import com.example.customer.model.Customer;
 import com.example.customer.repository.CustomerRepository;
 import com.example.customer.service.CustomerService;
@@ -17,10 +18,12 @@ import java.util.Optional;
 public class CustomerServiceImpl implements CustomerService {
 
     private final CustomerRepository customerRepository;
+    private final BankAccountClient bankAccountClient;
 
     @Autowired
-    public CustomerServiceImpl(CustomerRepository customerRepository) {
+    public CustomerServiceImpl(CustomerRepository customerRepository, BankAccountClient bankAccountClient) {
         this.customerRepository = customerRepository;
+        this.bankAccountClient = bankAccountClient;
     }
 
     @Override
@@ -62,6 +65,9 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public boolean deleteCustomer(Long id) {
+        if (bankAccountClient.hasBankAccounts(id)) {
+            throw new IllegalStateException("Customer has active bank accounts and cannot be deleted.");
+        }
         return customerRepository.findById(id)
                 .map(customer -> {
                     customerRepository.delete(customer);
