@@ -9,37 +9,41 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+/**
+ * Service class for interacting with the Bank Account microservice.
+ * Provides functionality to check if a customer has active bank accounts.
+ */
 @Service
 @RequiredArgsConstructor
 public class BankAccountClient {
 
-    private final WebClient webClient; // WebClient utilizado para interactuar con el microservicio de cuentas bancarias.
+    private final WebClient webClient; // WebClient used to interact with the Bank Account microservice.
 
     /**
-     * Verifica si un cliente tiene cuentas bancarias activas.
+     * Checks if a customer has active bank accounts by calling the Bank Account microservice.
      *
-     * @param customerId El ID del cliente.
-     * @return true si el cliente tiene cuentas bancarias activas; false si no las tiene.
+     * @param customerId The ID of the customer.
+     * @return true if the customer has active bank accounts; false otherwise.
      */
     public boolean hasBankAccounts(Long customerId) {
         try {
-            // Llama al endpoint /api/accounts/customer/{customerId}
+            // Sends a GET request to the endpoint /api/accounts/customer/{customerId}
             List<?> bankAccounts = webClient.get()
-                    .uri("/customer/{customerId}", customerId) // Llama al endpoint /api/accounts/customer/{customerId}
+                    .uri("/customer/{customerId}", customerId) // Replace {customerId} with the actual customer ID
                     .retrieve()
-                    .bodyToMono(List.class) // Espera recibir una lista de cuentas bancarias
-                    .block(); // Bloquea el flujo y obtiene el resultado sincrónicamente
+                    .bodyToMono(List.class) // Expecting a response body containing a list of bank accounts
+                    .block(); // Blocks the reactive flow and retrieves the result synchronously
 
-            // Imprime el contenido de bankAccounts
+            // Prints the content of bankAccounts for debugging purposes
             System.out.println("Bank Accounts Response: " + bankAccounts);
 
-            // Verifica si la lista no está vacía
+            // Checks if the list is not null or empty
             return bankAccounts != null && !bankAccounts.isEmpty();
         } catch (Exception e) {
+            // Logs the error and assumes the customer has no bank accounts in case of an exception
             System.err.println("Error checking bank accounts: " + e.getMessage());
-            return false; // En caso de error, asumimos que no tiene cuentas bancarias
+            return false;
         }
     }
 
 }
-
