@@ -51,12 +51,4 @@ public interface CustomerService {
    * @return True if the customer was successfully deleted, false otherwise.
    */
   boolean deleteCustomer(Long id);
-
-  /**
-   * Checks if a customer exists by their DNI.
-   *
-   * @param dni The DNI of the customer to check.
-   * @return True if a customer with the specified DNI exists, false otherwise.
-   */
-  boolean existsByDni(String dni);
 }

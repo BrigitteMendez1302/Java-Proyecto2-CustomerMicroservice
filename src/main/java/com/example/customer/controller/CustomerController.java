@@ -1,21 +1,25 @@
 package com.example.customer.controller;
 
-import com.example.customer.model.Customer;
+import com.example.customer.dto.CustomerRequest;
+import com.example.customer.dto.CustomerResponse;
+import com.example.customer.mapper.CustomerMapper;
 import com.example.customer.service.CustomerService;
-import com.example.customer.dto.ErrorResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 /**
  * CustomerController handles HTTP requests for managing customers.
  * It provides endpoints for creating, retrieving, updating, and deleting customers.
+ *
+ * Uses DTOs to encapsulate input and output data, separating API representation
+ * from the internal persistence model.
  */
 @RestController
 @RequestMapping("/api/customers")
@@ -29,64 +33,70 @@ public class CustomerController {
   }
 
   /**
-   * Endpoint to create a new customer.
+   * Creates a new customer.
    *
-   * @param customer The customer to be created.
-   * @return The created customer with status 201 Created.
+   * @param customerRequestDto The DTO containing customer data to create.
+   * @return The created customer's data wrapped in a CustomerResponseDto with HTTP 201 status.
    */
   @PostMapping
-  public ResponseEntity<?> createCustomer(@Valid @RequestBody Customer customer) {
-    Customer createdCustomer = customerService.createCustomer(customer);
-    return new ResponseEntity<>(createdCustomer, HttpStatus.CREATED);
+  public ResponseEntity<CustomerResponse> createCustomer(@Valid @RequestBody CustomerRequest customerRequestDto) {
+    var customer = customerService.createCustomer(CustomerMapper.toEntity(customerRequestDto));
+    return new ResponseEntity<>(CustomerMapper.toResponseDto(customer), HttpStatus.CREATED);
   }
 
   /**
-   * Endpoint to retrieve all customers.
+   * Retrieves all customers.
    *
-   * @return A list of all customers.
+   * @return A list of CustomerResponseDto representing all customers with HTTP 200 status.
    */
   @GetMapping
-  public ResponseEntity<List<Customer>> getAllCustomers() {
-    List<Customer> customers = customerService.getAllCustomers();
-    return new ResponseEntity<>(customers, HttpStatus.OK);
+  public ResponseEntity<List<CustomerResponse>> getAllCustomers() {
+    var customers = customerService.getAllCustomers();
+    var customerResponseDtos = customers.stream()
+            .map(CustomerMapper::toResponseDto)
+            .collect(Collectors.toList());
+    return new ResponseEntity<>(customerResponseDtos, HttpStatus.OK);
   }
 
   /**
-   * Endpoint to retrieve a customer by ID.
+   * Retrieves a specific customer by ID.
    *
    * @param id The ID of the customer to retrieve.
-   * @return The customer if found, or an error response if not found.
+   * @return The customer's data wrapped in a CustomerResponseDto with HTTP 200 status.
+   * @throws NoSuchElementException if the customer is not found.
    */
   @GetMapping("/{id}")
-  public ResponseEntity<Customer> getCustomerById(@PathVariable Long id) {
-    Customer customer = customerService.getCustomerById(id)
-            .orElseThrow(() -> new NoSuchElementException("Customer not found"));
-    return new ResponseEntity<>(customer, HttpStatus.OK);
+  public ResponseEntity<CustomerResponse> getCustomerById(@PathVariable Long id) {
+    var customer = customerService.getCustomerById(id)
+            .orElseThrow(() -> new NoSuchElementException("Customer not found with ID: " + id));
+    return new ResponseEntity<>(CustomerMapper.toResponseDto(customer), HttpStatus.OK);
   }
 
   /**
-   * Endpoint to update a customer's details.
+   * Updates an existing customer.
    *
-   * @param id       The ID of the customer to update.
-   * @param customer The updated customer details.
-   * @return The updated customer if successful, or an error response if there is an issue.
+   * @param id The ID of the customer to update.
+   * @param customerRequestDto The DTO containing updated customer data.
+   * @return The updated customer's data wrapped in a CustomerResponseDto with HTTP 200 status.
+   * @throws IllegalArgumentException if the customer does not exist or data is invalid.
    */
   @PutMapping("/{id}")
-  public ResponseEntity<?> updateCustomer(@PathVariable Long id, @Valid @RequestBody Customer customer) {
-    Customer updatedCustomer = customerService.updateCustomer(id, customer);
-    return new ResponseEntity<>(updatedCustomer, HttpStatus.OK);
+  public ResponseEntity<CustomerResponse> updateCustomer(@PathVariable Long id,
+                                                            @Valid @RequestBody CustomerRequest customerRequestDto) {
+    var updatedCustomer = customerService.updateCustomer(id, CustomerMapper.toEntity(customerRequestDto));
+    return new ResponseEntity<>(CustomerMapper.toResponseDto(updatedCustomer), HttpStatus.OK);
   }
 
   /**
-   * Endpoint to delete a customer by ID.
+   * Deletes a customer by ID.
    *
    * @param id The ID of the customer to delete.
-   * @return 204 No Content if successful, or an error response if there is an issue.
+   * @return HTTP 204 No Content if the deletion is successful.
+   * @throws IllegalStateException if the customer has active bank accounts.
    */
   @DeleteMapping("/{id}")
-  public ResponseEntity<?> deleteCustomer(@PathVariable Long id) {
-    boolean isDeleted = customerService.deleteCustomer(id);
-    return isDeleted ? new ResponseEntity<>(HttpStatus.NO_CONTENT)
-            : new ResponseEntity<>(new ErrorResponse("Customer has active accounts and cannot be deleted", "400"), HttpStatus.BAD_REQUEST);
+  public ResponseEntity<Void> deleteCustomer(@PathVariable Long id) {
+    customerService.deleteCustomer(id);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 }

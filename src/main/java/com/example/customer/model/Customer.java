@@ -4,12 +4,19 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+
 import java.util.Objects;
 
 /**
  * Represents a customer entity with personal details.
  */
 @Entity
+@Getter
+@Setter
+@ToString
 @Table(name = "customers")
 public class Customer {
 
@@ -54,60 +61,6 @@ public class Customer {
     this.lastName = lastName;
     this.dni = dni;
     this.email = email;
-  }
-
-  // Getters y Setters
-
-  public Long getId() {
-    return id;
-  }
-
-  public String getFirstName() {
-    return firstName;
-  }
-
-  public void setFirstName(String firstName) {
-    this.firstName = firstName;
-  }
-
-  public String getLastName() {
-    return lastName;
-  }
-
-  public void setLastName(String lastName) {
-    this.lastName = lastName;
-  }
-
-  public String getDni() {
-    return dni;
-  }
-
-  public void setDni(String dni) {
-    this.dni = dni;
-  }
-
-  public String getEmail() {
-    return email;
-  }
-
-  public void setEmail(String email) {
-    this.email = email;
-  }
-
-  /**
-   * Provides a string representation of the customer's key details.
-   *
-   * @return A string with the customer's main information.
-   */
-  @Override
-  public String toString() {
-    return "Customer{" +
-            "id=" + id +
-            ", firstName='" + firstName + '\'' +
-            ", lastName='" + lastName + '\'' +
-            ", dni='" + dni + '\'' +
-            ", email='" + email + '\'' +
-            '}';
   }
 
   /**

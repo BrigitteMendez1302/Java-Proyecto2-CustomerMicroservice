@@ -1,9 +1,10 @@
 package com.example.customer.service.impl;
 
-import com.example.customer.client.BankAccountClient;
 import com.example.customer.model.Customer;
 import com.example.customer.repository.CustomerRepository;
+import com.example.customer.service.AccountValidationService;
 import com.example.customer.service.CustomerService;
+import com.example.customer.service.DniValidationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,18 +19,18 @@ import java.util.Optional;
 public class CustomerServiceImpl implements CustomerService {
 
     private final CustomerRepository customerRepository; // Repository for accessing customer data
-    private final BankAccountClient bankAccountClient; // Client for interacting with the Bank Account microservice
-
+    private final DniValidationService dniValidationService;
+    private final AccountValidationService accountValidationService;
     /**
      * Constructor to initialize CustomerServiceImpl with required dependencies.
      *
      * @param customerRepository Repository for managing customer data.
-     * @param bankAccountClient  Client for verifying if customers have active bank accounts.
      */
     @Autowired
-    public CustomerServiceImpl(CustomerRepository customerRepository, BankAccountClient bankAccountClient) {
+    public CustomerServiceImpl(CustomerRepository customerRepository, DniValidationService dniValidationService, AccountValidationService accountValidationService) {
         this.customerRepository = customerRepository;
-        this.bankAccountClient = bankAccountClient;
+        this.dniValidationService = dniValidationService;
+        this.accountValidationService = accountValidationService;
     }
 
     /**
@@ -42,7 +43,7 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public Customer createCustomer(Customer customer) {
         // Check if a customer with the same DNI already exists
-        if (customerRepository.existsByDni(customer.getDni())) {
+        if (!dniValidationService.isUnique(customer.getDni())) {
             throw new IllegalArgumentException("A customer with this DNI already exists."); // Ensure DNI uniqueness
         }
         return customerRepository.save(customer); // Save and return the new customer
@@ -83,7 +84,7 @@ public class CustomerServiceImpl implements CustomerService {
                 .map(existingCustomer -> {
                     // Check if a different customer with the same DNI exists
                     if (!existingCustomer.getDni().equals(customer.getDni()) &&
-                            customerRepository.existsByDni(customer.getDni())) {
+                            !dniValidationService.isUnique(customer.getDni())) {
                         throw new IllegalArgumentException("A customer with this DNI already exists."); // Ensure DNI uniqueness
                     }
                     // Update customer details
@@ -96,6 +97,7 @@ public class CustomerServiceImpl implements CustomerService {
                 .orElseThrow(() -> new IllegalArgumentException("Customer not found with ID: " + id)); // Handle customer not found
     }
 
+
     /**
      * Deletes a customer if they have no active bank accounts.
      *
@@ -105,7 +107,7 @@ public class CustomerServiceImpl implements CustomerService {
      */
     @Override
     public boolean deleteCustomer(Long id) {
-        if (bankAccountClient.hasBankAccounts(id)) {
+        if (!accountValidationService.canDeleteCustomer(id)) {
             throw new IllegalStateException("Customer has active bank accounts and cannot be deleted."); // Ensure no active bank accounts
         }
         return customerRepository.findById(id)
@@ -114,16 +116,5 @@ public class CustomerServiceImpl implements CustomerService {
                     return true; // Return success
                 })
                 .orElse(false); // Return false if the customer is not found
-    }
-
-    /**
-     * Checks if a customer with the given DNI exists in the database.
-     *
-     * @param dni The DNI to check.
-     * @return true if a customer with the DNI exists; false otherwise.
-     */
-    @Override
-    public boolean existsByDni(String dni) {
-        return customerRepository.existsByDni(dni); // Check for customer existence by DNI
     }
 }

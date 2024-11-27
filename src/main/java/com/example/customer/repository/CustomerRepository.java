@@ -18,14 +18,6 @@ import java.util.Optional;
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
     /**
-     * Finds a customer by their DNI.
-     *
-     * @param dni The unique DNI of the customer.
-     * @return An Optional containing the customer if found, or empty if not found.
-     */
-    Optional<Customer> findByDni(String dni);
-
-    /**
      * Checks the existence of a customer by their DNI.
      * This method can be used to enforce unique DNI constraints.
      *
