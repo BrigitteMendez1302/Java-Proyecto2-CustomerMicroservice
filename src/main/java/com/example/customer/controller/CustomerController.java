@@ -4,6 +4,13 @@ import com.example.customer.dto.CustomerRequest;
 import com.example.customer.dto.CustomerResponse;
 import com.example.customer.mapper.CustomerMapper;
 import com.example.customer.service.CustomerService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,6 +30,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/api/customers")
+@Tag(name = "Customer", description = "Operaciones sobre Customers")
 public class CustomerController {
 
   private final CustomerService customerService;
@@ -32,23 +40,22 @@ public class CustomerController {
     this.customerService = customerService;
   }
 
-  /**
-   * Creates a new customer.
-   *
-   * @param customerRequestDto The DTO containing customer data to create.
-   * @return The created customer's data wrapped in a CustomerResponseDto with HTTP 201 status.
-   */
+  @Operation(summary = "Create a new customer", description = "Registers a new customer in the system")
+  @ApiResponses(value = {
+          @ApiResponse(responseCode = "201", description = "Customer created successfully",
+                  content = @Content(mediaType = "application/json", schema = @Schema(implementation = CustomerResponse.class))),
+          @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content)
+  })
   @PostMapping
-  public ResponseEntity<CustomerResponse> createCustomer(@Valid @RequestBody CustomerRequest customerRequestDto) {
+  public ResponseEntity<CustomerResponse> createCustomer(
+          @Valid @RequestBody @Parameter(description = "Customer request data", required = true) CustomerRequest customerRequestDto) {
     var customer = customerService.createCustomer(CustomerMapper.toEntity(customerRequestDto));
     return new ResponseEntity<>(CustomerMapper.toResponseDto(customer), HttpStatus.CREATED);
   }
 
-  /**
-   * Retrieves all customers.
-   *
-   * @return A list of CustomerResponseDto representing all customers with HTTP 200 status.
-   */
+  @Operation(summary = "Get all customers", description = "Retrieve a list of all customers")
+  @ApiResponse(responseCode = "200", description = "List of customers",
+          content = @Content(mediaType = "application/json", schema = @Schema(implementation = CustomerResponse.class)))
   @GetMapping
   public ResponseEntity<List<CustomerResponse>> getAllCustomers() {
     var customers = customerService.getAllCustomers();
@@ -58,44 +65,43 @@ public class CustomerController {
     return new ResponseEntity<>(customerResponseDtos, HttpStatus.OK);
   }
 
-  /**
-   * Retrieves a specific customer by ID.
-   *
-   * @param id The ID of the customer to retrieve.
-   * @return The customer's data wrapped in a CustomerResponseDto with HTTP 200 status.
-   * @throws NoSuchElementException if the customer is not found.
-   */
+  @Operation(summary = "Get a customer by ID", description = "Retrieve details of a specific customer by ID")
+  @ApiResponses(value = {
+          @ApiResponse(responseCode = "200", description = "Customer found",
+                  content = @Content(mediaType = "application/json", schema = @Schema(implementation = CustomerResponse.class))),
+          @ApiResponse(responseCode = "404", description = "Customer not found", content = @Content)
+  })
   @GetMapping("/{id}")
-  public ResponseEntity<CustomerResponse> getCustomerById(@PathVariable Long id) {
+  public ResponseEntity<CustomerResponse> getCustomerById(
+          @PathVariable @Parameter(description = "ID of the customer", required = true) Long id) {
     var customer = customerService.getCustomerById(id)
             .orElseThrow(() -> new NoSuchElementException("Customer not found with ID: " + id));
     return new ResponseEntity<>(CustomerMapper.toResponseDto(customer), HttpStatus.OK);
   }
 
-  /**
-   * Updates an existing customer.
-   *
-   * @param id The ID of the customer to update.
-   * @param customerRequestDto The DTO containing updated customer data.
-   * @return The updated customer's data wrapped in a CustomerResponseDto with HTTP 200 status.
-   * @throws IllegalArgumentException if the customer does not exist or data is invalid.
-   */
+  @Operation(summary = "Update a customer", description = "Updates the information of an existing customer")
+  @ApiResponses(value = {
+          @ApiResponse(responseCode = "200", description = "Customer updated successfully",
+                  content = @Content(mediaType = "application/json", schema = @Schema(implementation = CustomerResponse.class))),
+          @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
+          @ApiResponse(responseCode = "404", description = "Customer not found", content = @Content)
+  })
   @PutMapping("/{id}")
-  public ResponseEntity<CustomerResponse> updateCustomer(@PathVariable Long id,
-                                                            @Valid @RequestBody CustomerRequest customerRequestDto) {
+  public ResponseEntity<CustomerResponse> updateCustomer(
+          @PathVariable @Parameter(description = "ID of the customer", required = true) Long id,
+          @Valid @RequestBody @Parameter(description = "Updated customer data", required = true) CustomerRequest customerRequestDto) {
     var updatedCustomer = customerService.updateCustomer(id, CustomerMapper.toEntity(customerRequestDto));
     return new ResponseEntity<>(CustomerMapper.toResponseDto(updatedCustomer), HttpStatus.OK);
   }
 
-  /**
-   * Deletes a customer by ID.
-   *
-   * @param id The ID of the customer to delete.
-   * @return HTTP 204 No Content if the deletion is successful.
-   * @throws IllegalStateException if the customer has active bank accounts.
-   */
+  @Operation(summary = "Delete a customer", description = "Deletes a customer by ID")
+  @ApiResponses(value = {
+          @ApiResponse(responseCode = "204", description = "Customer deleted successfully"),
+          @ApiResponse(responseCode = "404", description = "Customer not found", content = @Content)
+  })
   @DeleteMapping("/{id}")
-  public ResponseEntity<Void> deleteCustomer(@PathVariable Long id) {
+  public ResponseEntity<Void> deleteCustomer(
+          @PathVariable @Parameter(description = "ID of the customer to delete", required = true) Long id) {
     customerService.deleteCustomer(id);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
