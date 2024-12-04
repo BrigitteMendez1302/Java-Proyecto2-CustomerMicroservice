@@ -62,23 +62,4 @@ public class Customer {
     this.dni = dni;
     this.email = email;
   }
-
-  /**
-   * Compares this customer with another object for equality based on ID.
-   *
-   * @param o the object to compare.
-   * @return true if the objects are equal, false otherwise.
-   */
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    Customer customer = (Customer) o;
-    return Objects.equals(id, customer.id);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(id);
-  }
 }

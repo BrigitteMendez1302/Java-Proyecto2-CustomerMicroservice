@@ -3,7 +3,6 @@ package com.example.customer.repository;
 import com.example.customer.model.Customer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import java.util.Optional;
 
 /**
  * CustomerRepository is the interface for CRUD operations on Customer entities.

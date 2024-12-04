@@ -1,7 +1,6 @@
 package com.example.customer.service.impl;
 
 import com.example.customer.client.BankAccountClient;
-import com.example.customer.service.AccountValidationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -29,7 +28,7 @@ class AccountValidationServiceImplTest {
     void testCanDeleteCustomer_WhenNoActiveAccounts_ShouldReturnTrue() {
         // Arrange
         Long customerId = 1L;
-        when(bankAccountClient.hasBankAccounts(customerId)).thenReturn(false); // Simula que no tiene cuentas activas
+        when(bankAccountClient.hasBankAccounts(customerId)).thenReturn(false); // Simulates that it doesn't have active accounts
 
         // Act
         boolean result = accountValidationService.canDeleteCustomer(customerId);
@@ -42,7 +41,7 @@ class AccountValidationServiceImplTest {
     void testCanDeleteCustomer_WhenActiveAccountsExist_ShouldReturnFalse() {
         // Arrange
         Long customerId = 1L;
-        when(bankAccountClient.hasBankAccounts(customerId)).thenReturn(true); // Simula que tiene cuentas activas
+        when(bankAccountClient.hasBankAccounts(customerId)).thenReturn(true); // Simulates that it has active accounts
 
         // Act
         boolean result = accountValidationService.canDeleteCustomer(customerId);

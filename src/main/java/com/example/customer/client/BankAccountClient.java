@@ -1,11 +1,8 @@
 package com.example.customer.client;
 
-import com.example.customer.model.BankAccount;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.server.ResponseStatusException;
-import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -34,14 +31,9 @@ public class BankAccountClient {
                     .bodyToMono(List.class) // Expecting a response body containing a list of bank accounts
                     .block(); // Blocks the reactive flow and retrieves the result synchronously
 
-            // Prints the content of bankAccounts for debugging purposes
-            System.out.println("Bank Accounts Response: " + bankAccounts);
-
             // Checks if the list is not null or empty
             return bankAccounts != null && !bankAccounts.isEmpty();
         } catch (Exception e) {
-            // Logs the error and assumes the customer has no bank accounts in case of an exception
-            System.err.println("Error checking bank accounts: " + e.getMessage());
             return false;
         }
     }
